@@ -8,6 +8,7 @@ public class SafeAreaPadding : MonoBehaviour
 
     void Update()
     {
+#if UNITY_IOS || UNITY_ANDROID
         if (Input.deviceOrientation != DeviceOrientation.Unknown && postOrientation == Input.deviceOrientation)
             return;
 
@@ -20,5 +21,6 @@ public class SafeAreaPadding : MonoBehaviour
         rect.sizeDelta = Vector2.zero;
         rect.anchorMax = new Vector2(area.xMax / resolution.width, area.yMax / resolution.height);
         rect.anchorMin = new Vector2(area.xMin / resolution.width, area.yMin / resolution.height);
+#endif
     }
 }
