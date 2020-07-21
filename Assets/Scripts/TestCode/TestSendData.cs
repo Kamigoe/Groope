@@ -1,10 +1,9 @@
-using Mirror;
 using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 
 [System.Serializable]
-public class TestSendData:MessageBase {
+public class TestSendData {
     public string msgID;
     public int msgCnt;
     public int msgNo;

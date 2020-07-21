@@ -6,16 +6,15 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.Networking;
 
-using Mirror;
 using Kakera;
 using MessagePack;
 using MessagePack.Resolvers;
 
 public class TestChat : MonoBehaviour
 {
-    private const int MSG_MAX_LENGTH = 10000;
+    public static TestChat instance = null;
 
-    [SerializeField] private NetworkManager manager = default;
+    private const int MSG_MAX_LENGTH = 10000;
 
     [SerializeField] private InputField _inputIP = default;
     [SerializeField] private Button _stayButton = default;
@@ -29,7 +28,6 @@ public class TestChat : MonoBehaviour
     [SerializeField] private Text _giveMessage = default;
 
     [SerializeField] private GameObject _start = default;
-    [SerializeField] private GameObject _stay = default;
     [SerializeField] private GameObject _connect = default;
     [SerializeField] private GameObject _complete = default;
     [SerializeField] private GameObject _disconnect = default;
@@ -38,10 +36,9 @@ public class TestChat : MonoBehaviour
     [SerializeField] private Image _receiveImage = default;
     [SerializeField] private Button _sendImageButton = default;
     [SerializeField] private Unimgpicker _unImgPicker = default;
+    [SerializeField] private GameObject _voiceChat = default;
 
     private bool _isConnect = false;
-    private bool _isServer = false;
-    private ConnectType _type = ConnectType.None;
     private List<TestReceiveData> receiveDataList;
 
     
@@ -72,29 +69,15 @@ public class TestChat : MonoBehaviour
 
     void Start()
     {
-        _stayButton.onClick.AddListener(() =>
-        {
-            _stay.SetActive(true);
-            _start.SetActive(false);
-            _isServer = true;
-
-            string ipAdress = _inputIP.text;
-
-            manager.networkAddress = ipAdress;
-            manager.StartHost();
-            NetworkServer.RegisterHandler<TestSendData>(ReceiveInfo);
-        });
+        instance = this;
 
         _connectButton.onClick.AddListener(() =>
         {
             _connect.SetActive(true);
             _start.SetActive(false);
-            
-            string ipAdress = _inputIP.text;
 
-            manager.networkAddress = ipAdress;
-            manager.StartClient();
-            NetworkClient.RegisterHandler<TestSendData>(ReceiveInfo);
+            Instantiate (_voiceChat);
+            VoiceChat.instance.Connect ();
         });
 
         _disconnectButton.onClick.AddListener(() =>
@@ -130,7 +113,6 @@ public class TestChat : MonoBehaviour
         receiveDataList = new List<TestReceiveData>();
 
         _start.SetActive(true);
-        _stay.SetActive(false);
         _connect.SetActive(false);
         _complete.SetActive(false);
         _disconnect.SetActive(false);
@@ -138,15 +120,13 @@ public class TestChat : MonoBehaviour
 
     void Update()
     {
-        if (!_isConnect && NetworkClient.isConnected)
+        if (!_isConnect && PhotonNetwork.inRoom)
         {
             _isConnect = true;
             _complete.SetActive(true);
             _connect.SetActive(false);
-            _stay.SetActive(false);
         }
-
-        if (_isConnect && !NetworkClient.isConnected)
+        if (_isConnect && !PhotonNetwork.inRoom)
         {
             _disconnect.SetActive(true);
             _complete.SetActive(false);
@@ -188,10 +168,8 @@ public class TestChat : MonoBehaviour
             sendData.msgCnt = msgDataList.Count;
             sendData.msgNo = i + 1;
             sendData.value = msgDataList[i].ToArray();
-            if (_isServer)
-                NetworkServer.SendToAll(sendData);
-            else
-                NetworkClient.Send(sendData);
+
+            VoiceChat.send.SendData(sendData);
             
             sendingData.Add(sendData);
         }
@@ -199,7 +177,7 @@ public class TestChat : MonoBehaviour
         return sendingData;
     }
 
-    private void ReceiveInfo (NetworkConnection connection, TestSendData data)
+    public void ReceiveInfo (TestSendData data)
     {
         int index = receiveDataList.FindIndex(x => x.msgID == data.msgID);
         if (index == -1)
@@ -209,10 +187,6 @@ public class TestChat : MonoBehaviour
             receiveDataList.Add(receiveData);
             Debug.Log("新規メッセージ");
         }
-
-        Debug.Log("データ情報");
-        Debug.Log("ID : " + data.msgID);
-        Debug.Log("メッセージ番号 : " + data.msgNo);
 
         receiveDataList[index].AddBuffer(data.msgNo, data.value);
         Debug.Log("復元中... " +  receiveDataList[index].msgAddCount + "/" + data.msgCnt);
@@ -224,6 +198,8 @@ public class TestChat : MonoBehaviour
             if (data.type == MessageSendType.Image)
             {
                 Debug.Log("画像復元");
+                Debug.Log ("ID :" + data.msgID + " type :" + data.type);
+                Debug.Log (data.value.Length);
                 ShowImage(receiveDataList[index].value, _receiveImage, 500);
             }
 
@@ -270,24 +246,15 @@ public class TestChat : MonoBehaviour
 
     bool IsConnect()
     {
-        if (_isServer)
-            return NetworkServer.connections.Count != 0;
-        
-        return NetworkClient.isConnected;
+        return PhotonNetwork.connected;
     }
 
     void DisConnect()
     {
-        if (NetworkClient.isConnected)
-        {
-            if (NetworkServer.active)
-                manager.StopHost();
-            else
-                manager.StopClient();
-        }
+        if (_isConnect)
+            VoiceChat.instance.Disconnect ();
 
         _isConnect = false;
-        _isServer = false;
     }
 
     IEnumerator LoadImage (string path, Image image)
@@ -341,26 +308,5 @@ public class TestChat : MonoBehaviour
     {
         Texture2D tex = TestUtils.ByteArrayToTexture2D(texture);
         ShowImage(tex, image, showSize);
-    }
-
-}
-
-public enum ConnectType
-{
-    Host,
-    Client,
-    Server,
-    None
-}
-
-
-namespace AIUEO
-{
-    public class testtest
-    {
-        public void test()
-        {
-            Texture2DPack pak = new Texture2DPack();
-        }
     }
 }

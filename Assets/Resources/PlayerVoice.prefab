@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 9035713050795979451}
   - component: {fileID: 3767961544781202842}
   - component: {fileID: 7737038315211724640}
+  - component: {fileID: 3944059335476688413}
   m_Layer: 0
   m_Name: PlayerVoice
   m_TagString: Untagged
@@ -185,3 +186,15 @@ MonoBehaviour:
   instantiationId: -1
   currentMasterID: -1
   isRuntimeInstantiated: 0
+--- !u!114 &3944059335476688413
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6252745131178585806}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eb1fd261dde2b5042b2822312d938be8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
