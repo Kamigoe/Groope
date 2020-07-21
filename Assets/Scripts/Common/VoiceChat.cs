@@ -39,7 +39,7 @@ public class VoiceChat : MonoBehaviour
 
     public void Connect (string roomName = "room")
     {
-        if (string.IsNullOrEmpty (roomName))
+        if (!string.IsNullOrEmpty (roomName))
             _roomName = roomName;
         PhotonNetwork.ConnectUsingSettings("0.1");
     }

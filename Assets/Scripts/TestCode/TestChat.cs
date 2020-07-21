@@ -17,7 +17,6 @@ public class TestChat : MonoBehaviour
     private const int MSG_MAX_LENGTH = 10000;
 
     [SerializeField] private InputField _inputIP = default;
-    [SerializeField] private Button _stayButton = default;
     [SerializeField] private Button _connectButton = default;
     [SerializeField] private Button _disconnectButton = default;
     [SerializeField] private Button _backButton = default;
@@ -77,7 +76,7 @@ public class TestChat : MonoBehaviour
             _start.SetActive(false);
 
             Instantiate (_voiceChat);
-            VoiceChat.instance.Connect ();
+            VoiceChat.instance.Connect (_inputIP.text);
         });
 
         _disconnectButton.onClick.AddListener(() =>
