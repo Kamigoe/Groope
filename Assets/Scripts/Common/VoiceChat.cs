@@ -18,7 +18,7 @@ public class VoiceChat : MonoBehaviour
             isVisible = false,
             maxPlayers = 4
         };
-        PhotonNetwork.JoinOrCreateRoom("room",options,TypedLobby.Default);
+        PhotonNetwork.JoinOrCreateRoom(_roomName,options,TypedLobby.Default);
         
         Debug.Log ("JoinLobby");
     }
