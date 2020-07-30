@@ -16,6 +16,16 @@ public class TestChat : MonoBehaviour
 
     private const int MSG_MAX_LENGTH = 10000;
 
+    [SerializeField] private InputField _signInUserMame = default;
+    [SerializeField] private InputField _signInPassword = default;
+    [SerializeField] private Button _signInButton = default;
+    [SerializeField] private Button _goSignUpButton = default;
+    
+    [SerializeField] private InputField _signUpUserMame = default;
+    [SerializeField] private InputField _signUpPassword = default;
+    [SerializeField] private InputField _signUpConfirmPassword = default;
+    [SerializeField] private Button _signUpButton = default;
+
     [SerializeField] private InputField _inputIP = default;
     [SerializeField] private Button _connectButton = default;
     [SerializeField] private Button _disconnectButton = default;
@@ -26,6 +36,9 @@ public class TestChat : MonoBehaviour
     [SerializeField] private Button _sendMessageButton = default;
     [SerializeField] private Text _giveMessage = default;
 
+    [SerializeField] private GameObject _signIn = default;
+    [SerializeField] private GameObject _signUp = default;
+    [SerializeField] private GameObject _signLoad = default;
     [SerializeField] private GameObject _start = default;
     [SerializeField] private GameObject _connect = default;
     [SerializeField] private GameObject _complete = default;
@@ -69,6 +82,31 @@ public class TestChat : MonoBehaviour
     void Start()
     {
         instance = this;
+        
+        _goSignUpButton.onClick.AddListener(() =>
+        {
+            _signUp.SetActive(true);
+            _signIn.SetActive(false);
+        });
+        
+        _signInButton.onClick.AddListener(() =>
+        {
+            _signLoad.SetActive(true);
+            _signIn.SetActive(false);
+            
+            NCMBController.SignIn(_signInUserMame.text, _signInPassword.text);
+            _signInPassword.text = "";
+        });
+        
+        _signUpButton.onClick.AddListener(() =>
+        {
+            _signLoad.SetActive(true);
+            _signUp.SetActive(false);
+            
+            NCMBController.SignUp(_signUpUserMame.text, _signUpPassword.text, _signUpConfirmPassword.text);
+            _signUpPassword.text = "";
+            _signUpConfirmPassword.text = "";
+        });
 
         _connectButton.onClick.AddListener(() =>
         {
@@ -104,6 +142,29 @@ public class TestChat : MonoBehaviour
         {
             _unImgPicker.Show("選択", "sendimage", 1024);
         });
+        
+        NCMBController.OnSignInComplete(() =>
+        {
+            _start.SetActive(true);
+            _signLoad.SetActive(false);
+        });
+        NCMBController.OnSignInFailed(() =>
+        {
+            _signIn.SetActive(true);
+            _signLoad.SetActive(false);
+        });
+        
+        NCMBController.OnSignUpComplete(() =>
+        {
+            _start.SetActive(true);
+            _signLoad.SetActive(false);
+        });
+        NCMBController.OnSignUpFailed(() =>
+        {
+            _signUp.SetActive(true);
+            _signLoad.SetActive(false);
+        });
+        
         _unImgPicker.Completed += (path) =>
         {
             StartCoroutine(LoadImage(path, _sendImage));
@@ -111,7 +172,10 @@ public class TestChat : MonoBehaviour
 
         receiveDataList = new List<TestReceiveData>();
 
-        _start.SetActive(true);
+        _signIn.SetActive(true);
+        _signUp.SetActive(false);
+        _signLoad.SetActive(false);
+        _start.SetActive(false);
         _connect.SetActive(false);
         _complete.SetActive(false);
         _disconnect.SetActive(false);
