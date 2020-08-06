@@ -85,9 +85,9 @@ public static class NCMBController
         } ));
     }
 
-    public static string GetObjectID()
+    public static string GetUserID()
     {
-        return user?.ObjectId;
+        return user?.UserName;
     }
 
     public static void OnSignInComplete(UnityAction callback)

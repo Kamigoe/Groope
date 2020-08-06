@@ -38,7 +38,7 @@ public class VoiceChat : MonoBehaviour
     {
         if (!string.IsNullOrEmpty (roomName))
             _roomName = roomName;
-        PhotonNetwork.AuthValues = new AuthenticationValues(NCMBController.GetObjectID());
+        PhotonNetwork.AuthValues = new AuthenticationValues(NCMBController.GetUserID());
         PhotonNetwork.ConnectUsingSettings("0.1");
     }
 
