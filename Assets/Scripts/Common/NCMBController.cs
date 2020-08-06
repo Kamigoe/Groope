@@ -4,6 +4,8 @@ using UnityEngine;
 using UnityEngine.Events;
 using NCMB;
 
+using static CommonUtils;
+
 public static class NCMBController
 {
     private static UnityAction _onLogInComplete = null;
@@ -11,11 +13,14 @@ public static class NCMBController
     private static UnityAction _onLogOutComplete = null;
     private static UnityAction _onLogOutFailed = null;
     private static UnityAction _onSignUpComplete = null;
-    private static UnityAction _onSignUpInFailed = null;
+    private static UnityAction _onSignUpFailed = null;
+
+    private static NCMBUser user;
     
     public static void SignIn(string userName, string password)
     {
-        NCMBUser.LogInAsync(userName, password, (error =>
+        Debug.Log(SHA256(userName, password));
+        NCMBUser.LogInAsync(userName, SHA256(userName, password), (error =>
         {
             if (error != null)
             {
@@ -23,27 +28,43 @@ public static class NCMBController
                 _onLogInFailed?.Invoke();
             }
             else
+            {
                 _onLogInComplete?.Invoke();
+                user = NCMBUser.CurrentUser;
+            }
         }));
     }
 
     public static void SignUp(string userName, string password, string confirmPassword)
     {
-        if (!password.Equals(confirmPassword)) return;
+        if (!password.Equals(confirmPassword))
+        {
+            _onSignUpFailed?.Invoke();
+            return;
+        }
+
+        if (string.IsNullOrEmpty(password))
+        {
+            _onSignUpFailed?.Invoke();
+            return;
+        }
         
-        NCMBUser user = new NCMBUser();
+        user = new NCMBUser();
         user.UserName = userName;
-        user.Password = password;
+        user.Password = SHA256(userName, password);
         
         user.SignUpAsync((error =>
         {
             if (error != null)
             {
                 Debug.Log(error.ErrorCode + ":"+ error.ErrorMessage);
-                _onSignUpInFailed?.Invoke();
+                _onSignUpFailed?.Invoke();
             }
             else
+            {
                 _onSignUpComplete?.Invoke();
+                user = NCMBUser.CurrentUser;
+            }
         } ));
     }
 
@@ -57,8 +78,16 @@ public static class NCMBController
                 _onLogOutFailed?.Invoke();
             }
             else
+            {
                 _onLogOutComplete?.Invoke();
+                user = null;
+            }
         } ));
+    }
+
+    public static string GetObjectID()
+    {
+        return user?.ObjectId;
     }
 
     public static void OnSignInComplete(UnityAction callback)
@@ -83,6 +112,6 @@ public static class NCMBController
     }
     public static void OnSignUpFailed(UnityAction callback)
     {
-        _onSignUpInFailed = callback;
+        _onSignUpFailed = callback;
     }
 }

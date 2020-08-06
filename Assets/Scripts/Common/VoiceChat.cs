@@ -14,12 +14,9 @@ public class VoiceChat : MonoBehaviour
     void Awake () { instance = this; }
 
     void OnJoinedLobby() {
-        RoomOptions options = new RoomOptions() {
-            isVisible = false,
-            maxPlayers = 4
-        };
+        RoomOptions options = new RoomOptions();
         PhotonNetwork.JoinOrCreateRoom(_roomName,options,TypedLobby.Default);
-        
+
         Debug.Log ("JoinLobby");
     }
 
@@ -41,6 +38,7 @@ public class VoiceChat : MonoBehaviour
     {
         if (!string.IsNullOrEmpty (roomName))
             _roomName = roomName;
+        PhotonNetwork.AuthValues = new AuthenticationValues(NCMBController.GetObjectID());
         PhotonNetwork.ConnectUsingSettings("0.1");
     }
 
