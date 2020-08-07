@@ -5,7 +5,7 @@ using UnityEngine;
 public class SafeAreaPadding : MonoBehaviour
 {
     private DeviceOrientation postOrientation;
-
+    
     void Update()
     {
 #if UNITY_IOS || UNITY_ANDROID
@@ -18,9 +18,11 @@ public class SafeAreaPadding : MonoBehaviour
         Rect area = Screen.safeArea;
         Resolution resolution = Screen.currentResolution;
 
+        Rect keyArea = TouchScreenKeyboard.area;
+
         rect.sizeDelta = Vector2.zero;
         rect.anchorMax = new Vector2(area.xMax / resolution.width, area.yMax / resolution.height);
-        rect.anchorMin = new Vector2(area.xMin / resolution.width, area.yMin / resolution.height);
+        rect.anchorMin = new Vector2(area.xMin / resolution.width, (area.yMin + keyArea.height) / resolution.height);
 #endif
     }
 }
