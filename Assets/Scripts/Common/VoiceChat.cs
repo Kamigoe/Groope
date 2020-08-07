@@ -6,6 +6,7 @@ public class VoiceChat : MonoBehaviour
 {
     public static VoiceChat instance;
     public static PhotonSend send = null;
+    private RectTransform _parent = null;
 
     // Photonプレハブのパス
     private string _path = "PlayerVoice";
@@ -27,6 +28,8 @@ public class VoiceChat : MonoBehaviour
             Quaternion.identity,
             0
         );
+        
+        obj.transform.SetParent(_parent);
 
         send = obj.GetComponent<PhotonSend> ();
         send.Initialize ();
@@ -48,5 +51,10 @@ public class VoiceChat : MonoBehaviour
         PhotonNetwork.Disconnect ();
 
         Destroy (this.gameObject);
+    }
+
+    public void SetPlayerParent(RectTransform parent)
+    {
+        _parent = parent;
     }
 }
