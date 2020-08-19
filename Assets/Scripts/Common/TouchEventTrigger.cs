@@ -13,6 +13,7 @@ public class TouchEventTrigger : EventTrigger
 
     private UnityAction<PointerEventData> _onPointerDown;
     private UnityAction<PointerEventData> _onPointerUp;
+    private UnityAction<PointerEventData> _onPointerClick;
     private UnityAction<PointerEventData> _onDrag;
 
     private void Awake()
@@ -30,6 +31,11 @@ public class TouchEventTrigger : EventTrigger
     public override void OnPointerUp(PointerEventData eventData)
     {
         _onPointerUp?.Invoke(eventData);
+    }
+
+    public override void OnPointerClick(PointerEventData eventData)
+    {
+        _onPointerClick?.Invoke(eventData);
     }
 
     public override void OnDrag(PointerEventData eventData)
@@ -52,6 +58,7 @@ public class TouchEventTrigger : EventTrigger
                 _onPointerUp = eventFunc;
                 break;
             case EventTriggerType.PointerClick:
+                _onPointerClick = eventFunc;
                 break;
             case EventTriggerType.Drag:
                 _onDrag = eventFunc;
