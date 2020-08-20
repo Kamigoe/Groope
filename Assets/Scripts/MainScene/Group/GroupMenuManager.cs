@@ -5,7 +5,14 @@ using UnityEngine.UI;
 
 public class GroupMenuManager : MonoBehaviour
 {
+    public static GroupMenuManager Instance;
+
     [SerializeField] private Button _configButton;
+
+    void Awake()
+    {
+        Instance = this;
+    }
 
     void Start()
     {

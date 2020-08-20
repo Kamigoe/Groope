@@ -20,15 +20,20 @@ public class MainManager : MonoBehaviour
     private float ActionMinY = 0;
     private float ActionMaxY = 545f;
     
-    [SerializeField] private SafeAreaPadding _padding;
-    [SerializeField] private RectTransform _groupMenu;
-    [SerializeField] private RectTransform _chatMenu;
-    [SerializeField] private RectTransform _actionMenu;
-    [SerializeField] private TouchEventTrigger _modalAction;
-    [SerializeField] private TouchEventTrigger _modal;
+    [SerializeField] private SafeAreaPadding _padding = default;
+    [SerializeField] private RectTransform _groupMenu = default;
+    [SerializeField] private RectTransform _chatMenu = default;
+    [SerializeField] private RectTransform _actionMenu = default;
+    [SerializeField] private TouchEventTrigger _modalAction = default;
+    [SerializeField] private TouchEventTrigger _modal = default;
+
+    [SerializeField] private Button _groupButton = default;
+    [SerializeField] private Button _chatButton = default;
+    [SerializeField] private Button _actionButton = default;
 
     private RaycastDetector _modalAction_Graph;
     private RaycastDetector _modal_Graph;
+    private Image _action_Graph;
 
     private MainSceneState _beforeState;
     private MainSceneState _state;
@@ -70,6 +75,7 @@ public class MainManager : MonoBehaviour
 
         _modalAction_Graph = _modalAction.GetComponent<RaycastDetector>();
         _modal_Graph = _modal.GetComponent<RaycastDetector>();
+        _action_Graph = _actionButton.GetComponent<Image>();
 
         _modal.SetEventTrigger(EventTriggerType.PointerClick, (data) =>
         {
@@ -101,8 +107,51 @@ public class MainManager : MonoBehaviour
                     _actionMenu.anchoredPosition = new Vector2(_actionMenu.anchoredPosition.x, posY);
                 });
                 _modalAction_Graph.DOFade(0, 0.2f);
+                _action_Graph.DOFade(1, 0.2f);
                 _isShowingAction = false;
                 _state = MainSceneState.ShowMain;
+            }
+        });
+
+        _groupButton.onClick.AddListener(() => 
+        {
+            if (_state == MainSceneState.ShowMain)
+            {
+                DOVirtual.Float(GroupMaxX, GroupMinX, 0.2f, (posX) =>
+                {
+                    _groupMenu.anchoredPosition = new Vector2(posX, _groupMenu.anchoredPosition.y);
+                });
+                _modal_Graph.DOFade(ModalAlpha, 0.2f);
+                _state = MainSceneState.ShowGroup;
+            }
+        });
+        
+        _chatButton.onClick.AddListener(() => 
+        {
+            if (_state == MainSceneState.ShowMain)
+            {
+                DOVirtual.Float(ChatMinX, ChatMaxX, 0.2f, (posX) =>
+                {
+                    _chatMenu.anchoredPosition = new Vector2(posX, _chatMenu.anchoredPosition.y);
+                });
+                _modal_Graph.DOFade(ModalAlpha, 0.2f);
+                _state = MainSceneState.ShowChat;
+            }
+        });
+
+        _actionButton.onClick.AddListener(() =>
+        {
+            if (_state == MainSceneState.ShowMain)
+            {
+                DOVirtual.Float(ActionMinY, ActionMaxY, 0.2f, (posY) =>
+                {
+                    _actionMenu.anchoredPosition = new Vector2(_actionMenu.anchoredPosition.x, posY);
+                });
+                _modalAction_Graph.DOFade(ModalAlpha, 0.2f);
+                _action_Graph.DOFade(0, 0.2f);
+                _state = MainSceneState.ShowAction;
+
+                _isShowingAction = true;
             }
         });
         
@@ -190,6 +239,7 @@ public class MainManager : MonoBehaviour
                     });
                     
                     _modalAction_Graph.DOFade(_touchPosRatio.y > 0 ? ModalAlpha : 0, (1f - Mathf.Abs(_touchPosRatio.y)) * 0.2f);
+                    _action_Graph.DOFade(_touchPosRatio.y > 0 ? 0 : 1, (1f - Mathf.Abs(_touchPosRatio.y)) * 0.2f);
                     _isShowingAction = _touchPosRatio.y > 0 ? true : false;
                 }
                 else
@@ -273,6 +323,7 @@ public class MainManager : MonoBehaviour
                 {
                     var alpha = Mathf.Abs(menuPosY - _minPos.y) / distY;
                     _modalAction_Graph.color = new Color(0, 0, 0, alpha * ModalAlpha);
+                    _action_Graph.color = new Color(1, 1, 1, 1 - alpha);
                 }
                 else
                 {
@@ -285,10 +336,13 @@ public class MainManager : MonoBehaviour
 
         _modal_Graph.gameObject.SetActive(false);
         _modalAction_Graph.gameObject.SetActive(false);
+        _action_Graph.gameObject.SetActive(false);
         if (_modal_Graph.color.a > 0)
             _modal_Graph.gameObject.SetActive(true);
         if (_modalAction_Graph.color.a > 0)
             _modalAction_Graph.gameObject.SetActive(true);
+        if (_action_Graph.color.a > 0)
+            _action_Graph.gameObject.SetActive(true);
     }
 
     private MainSceneState GetNextState ()
