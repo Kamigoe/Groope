@@ -72,6 +72,7 @@ public class MainManager : MonoBehaviour
         ActionMinY -= _bottomPaddingSize;
 
         _actionMenu.anchoredPosition = new Vector2(_actionMenu.anchoredPosition.x, ActionMinY);
+        _actionButton.GetComponent<RectTransform>().anchoredPosition += new Vector2(0, _bottomPaddingSize);
 
         _modalAction_Graph = _modalAction.GetComponent<RaycastDetector>();
         _modal_Graph = _modal.GetComponent<RaycastDetector>();
