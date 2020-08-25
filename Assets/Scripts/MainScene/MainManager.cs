@@ -11,6 +11,7 @@ public class MainManager : MonoBehaviour
     private float ChangeStateMoveRatioY = 0.05f;
     private float ChangeMenuMoveRatioX = 0.15f;
     private float ChangeMenuMoveRatioY = 0.15f;
+    private float scrollSencivility = 35;
     private float ModalAlpha = 0.5f;
 
     private float GroupMinX = -375f;
@@ -31,26 +32,30 @@ public class MainManager : MonoBehaviour
     [SerializeField] private Button _chatButton = default;
     [SerializeField] private Button _actionButton = default;
 
-    private RaycastDetector _modalAction_Graph;
-    private RaycastDetector _modal_Graph;
-    private Image _action_Graph;
+    [SerializeField] private ScrollRect _groupScroll = default;
 
-    private MainSceneState _beforeState;
-    private MainSceneState _state;
-    private GraphicRaycaster _raycaster;
+    private RaycastDetector _modalAction_Graph = default;
+    private RaycastDetector _modal_Graph = default;
+    private Image _action_Graph = default;
 
-    private Vector2 _screenRatio;
-    private Vector2 _touchPosition;
-    private Vector2 _touchPosRatio;
+    private MainSceneState _beforeState = default;
+    private MainSceneState _state = default;
+    private GraphicRaycaster _raycaster = default;
 
-    private RectTransform _menuRect;
-    private Vector2 _menuPos;
-    private Vector2 _minPos;
-    private Vector2 _maxPos;
+    private Vector2 _screenRatio = default;
+    private Vector2 _touchPosition = default;
+    private Vector2 _touchPosRatio = default;
 
-    private float _bottomPaddingSize;
-    private bool _onTouch;
-    private bool _isShowingAction;
+    private RectTransform _menuRect = default;
+    private Vector2 _menuPos = default;
+    private Vector2 _minPos = default;
+    private Vector2 _maxPos = default;
+
+    private Vector2 _groupScrollRatio = default;
+
+    private float _bottomPaddingSize = default;
+    private bool _onTouch = default;
+    private bool _isShowingAction = default;
     
     void Start()
     {
@@ -156,47 +161,15 @@ public class MainManager : MonoBehaviour
             }
         });
         
-        // trigger.SetEventTrigger(EventTriggerType.PointerDown, (data) =>
-        // {
-        //     _onTouch = true;
-        //     _touchPosition = Input.mousePosition;
-        //     _menuPos = _groupMenu.anchoredPosition;
-        // });
-        
-        // trigger.SetEventTrigger(EventTriggerType.Drag, (data) =>
-        // {
-        //     var pos = new Vector2(Input.mousePosition.x - _touchPosition.x, Input.mousePosition.y - _touchPosition.y);
-        //     _touchPosRatio = new Vector2(pos.x / Screen.width, pos.y / Screen.height);
+        _groupScroll.onValueChanged.AddListener((value) =>
+        {
+            var rect = _groupScroll.GetComponent<RectTransform>();
+            value *= rect.sizeDelta;
+            var scroll = Mathf.Abs(value.y - _groupScrollRatio.y);
 
-        //     var menuPosX = _menuPos.x + 365f * _touchPosRatio.x;
-        //     if (menuPosX > -10f) menuPosX = -10f;
-        //     if (menuPosX < -375f) menuPosX = -375f;
-            
-        //     _groupMenu.anchoredPosition = new Vector2(menuPosX, _menuPos.y);
-        //     _modal.color = new Color(0, 0, 0, (menuPosX + 10f) / -365f * ModalAlpha);
-        // });
-        
-        // trigger.SetEventTrigger(EventTriggerType.PointerUp, (data) =>
-        // {
-        //     if (Mathf.Abs(_touchPosRatio.x) >= 0.15f)
-        //     {
-        //         DOVirtual.Float((float)_groupMenu.anchoredPosition.x, _touchPosRatio.x > 0 ? -10 : -375f, (1f - Mathf.Abs(_touchPosRatio.x)) * 0.2f, (posX) =>
-        //         {
-        //             _groupMenu.anchoredPosition = new Vector2(posX, _menuPos.y);
-        //         });
-        //         _modal.DOFade(_touchPosRatio.x > 0 ? 0 : ModalAlpha, (1f - Mathf.Abs(_touchPosRatio.x)) * 0.2f);
-        //     }
-        //     else
-        //     {
-        //         DOVirtual.Float((float)_groupMenu.anchoredPosition.x, _menuPos.x, (1f - Mathf.Abs(_touchPosRatio.x)) * 0.2f, (posX) =>
-        //         {
-        //             _groupMenu.anchoredPosition = new Vector2(posX, _menuPos.y);
-        //         });
-        //         _modal.DOFade(_modal.color.a > ModalAlpha / 2f ? ModalAlpha : 0, (1f - Mathf.Abs(_touchPosRatio.x)) * 0.2f);
-        //     }
-
-        //     _onTouch = false;
-        // });
+            if (scroll >= scrollSencivility)
+                _onTouch = false;
+        });
     }
 
     void Update()
@@ -205,17 +178,17 @@ public class MainManager : MonoBehaviour
 
         if (touchInfo == TouchInfo.Began)
         {
-            Debug.Log("TouchBegan");
             _onTouch = true;
             _touchPosition = TouchInput.GetTouchPosition();
-            
-            Debug.Log(_state);
+
+            var groupScrollRect = _groupScroll.GetComponent<RectTransform>();
+            _groupScrollRatio = _groupScroll.normalizedPosition * groupScrollRect.sizeDelta;
         }
         else if (touchInfo == TouchInfo.Ended)
         {
-            Debug.Log("TouchEnded");
             _onTouch = false;
             _raycaster.ignoreReversedGraphics = true;
+            _groupScroll.vertical = true;
 
             if (_menuRect != null)
             {
@@ -263,7 +236,6 @@ public class MainManager : MonoBehaviour
                 var nextState = GetNextState();
                 _beforeState = _state;
                 _state = nextState;
-                Debug.Log(nextState);
             }
         }
         
@@ -281,10 +253,10 @@ public class MainManager : MonoBehaviour
                 var nextState = GetNextState();
                 if (_state != nextState)
                 {
+                    _groupScroll.vertical = false;
                     _raycaster.ignoreReversedGraphics = false;
                     _beforeState = _state;
                     _state = nextState;
-                    Debug.Log(nextState);
                     if (_state == MainSceneState.MoveGroup)
                     {
                         _menuPos = _groupMenu.anchoredPosition;

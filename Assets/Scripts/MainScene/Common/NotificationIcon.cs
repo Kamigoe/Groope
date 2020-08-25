@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class NoticicationIcon : MonoBehaviour
+public class NotificationIcon : MonoBehaviour
 {
     private Text _text = default;
     private LayoutElement _element = default;

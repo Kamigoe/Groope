@@ -3728,6 +3728,7 @@ MonoBehaviour:
   _groupButton: {fileID: 590489552}
   _chatButton: {fileID: 1420926904}
   _actionButton: {fileID: 1908492147}
+  _groupScroll: {fileID: 1274283219}
 --- !u!114 &3900982995122576508
 MonoBehaviour:
   m_ObjectHideFlags: 0

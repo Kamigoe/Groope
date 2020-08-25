@@ -34,7 +34,6 @@ public class TextScroll : BaseMeshEffect
         _cacheGraphic = GetComponent<Graphic>();
         _pivotX = (transform as RectTransform).pivot.x;
         _rectWidth = (transform as RectTransform).rect.width;
-        Debug.Log(_rectWidth);
     }
     private void Update()
     {

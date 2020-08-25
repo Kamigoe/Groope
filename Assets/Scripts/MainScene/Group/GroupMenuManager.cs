@@ -100,6 +100,7 @@ public class GroupMenuManager : MonoBehaviour
         for (var i = 0; i < 20; i++)
         {
             var obj = Instantiate(_groupButtonPrefab, _groupListParent, true);
+            obj.transform.localScale = Vector3.one;
         }
     }
 }
