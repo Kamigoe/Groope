@@ -12,7 +12,7 @@ public class MainManager : MonoBehaviour
     private float ChangeStateMoveRatioY = 0.05f;
     private const float ChangeMenuMoveRatioX = 0.15f;
     private float ChangeMenuMoveRatioY = 0.15f;
-    private const float ScrollSencivility = 35;
+    private const float Scrollensibility = 25;
     private const float ModalAlpha = 0.5f;
 
     private const float GroupMinX = -375f;
@@ -163,7 +163,7 @@ public class MainManager : MonoBehaviour
             value *= rect.sizeDelta;
             var scroll = Mathf.Abs(value.y - _groupScrollRatio.y);
 
-            if (scroll >= ScrollSencivility)
+            if (scroll >= Scrollensibility)
                 _onTouch = false;
         });
         
@@ -173,7 +173,7 @@ public class MainManager : MonoBehaviour
             value *= rect.sizeDelta;
             var scroll = Mathf.Abs(value.y - _chatScrollRatio.y);
 
-            if (scroll >= ScrollSencivility)
+            if (scroll >= Scrollensibility)
                 _onTouch = false;
         });
     }
