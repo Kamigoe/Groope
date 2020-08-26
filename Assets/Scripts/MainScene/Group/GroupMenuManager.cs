@@ -85,6 +85,42 @@ public class GroupMenuManager : MonoBehaviour
 
             _visibleGroupList = !_visibleGroupList;
         });
+
+        _showHideButton_Friend.onClick.AddListener(() =>
+        {
+            var buttonRect = _showHideButton_Friend.GetComponent<RectTransform>();
+            var element = _friendListParent.GetComponent<LayoutElement>();
+            if (!_visibleFriendList)
+            {
+                buttonRect.DOLocalRotate(new Vector3(0, 0, 180), 1f / 6f, RotateMode.FastBeyond360).SetRelative()
+                    .OnComplete(() =>
+                    {
+                        buttonRect.DOLocalMoveY(5, 1f / 3f).SetRelative();
+                    });
+
+                DOVirtual.Float(0, 90 * _friendListParent.childCount, 0.5f, value =>
+                {
+                    _friendListParent.sizeDelta = new Vector2(375, value);
+                    element.preferredHeight = value;
+                });
+            }
+            else
+            {
+                buttonRect.DOLocalRotate(new Vector3(0, 0, -180), 1f / 6f, RotateMode.FastBeyond360).SetRelative()
+                    .OnComplete(() =>
+                    {
+                        buttonRect.DOLocalMoveY(-5, 1f / 3f).SetRelative();
+                    });
+
+                DOVirtual.Float(90 * _friendListParent.childCount, 0, 0.5f, value =>
+                {
+                    _friendListParent.sizeDelta = new Vector2(375, value);
+                    element.preferredHeight = value;
+                });
+            }
+
+            _visibleFriendList = !_visibleFriendList;
+        });
         
         DebugFunc();
     }
@@ -100,6 +136,12 @@ public class GroupMenuManager : MonoBehaviour
         for (var i = 0; i < 20; i++)
         {
             var obj = Instantiate(_groupButtonPrefab, _groupListParent, true);
+            obj.transform.localScale = Vector3.one;
+        }
+
+        for (var i = 0; i < 10; i++)
+        {
+            var obj = Instantiate(_groupButtonPrefab, _friendListParent, true);
             obj.transform.localScale = Vector3.one;
         }
     }

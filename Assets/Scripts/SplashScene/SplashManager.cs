@@ -8,19 +8,19 @@ using UnityEngine.SceneManagement;
 
 public class SplashManager : MonoBehaviour
 {
-    [SerializeField] private Image _backGround;
-    [SerializeField] private Image _img1;
-    [SerializeField] private Image _img2;
-    [SerializeField] private Image _img3;
-    [SerializeField] private Image _title;
+    [SerializeField] private Image _backGround = default;
+    [SerializeField] private Image _img1 = default;
+    [SerializeField] private Image _img2 = default;
+    [SerializeField] private Image _img3 = default;
+    [SerializeField] private Image _title = default;
 
-    private RectTransform _transform1;
-    private RectTransform _transform2;
-    private RectTransform _transform3;
-    private RectTransform _transform4;
-    private GradientAlpha _alpha3;
-    private GradientAlpha _alpha1;
-    private GradientAlpha _alpha2;
+    private RectTransform _transform1 = default;
+    private RectTransform _transform2 = default;
+    private RectTransform _transform3 = default;
+    private RectTransform _transform4 = default;
+    private GradientAlpha _alpha3 = default;
+    private GradientAlpha _alpha1 = default;
+    private GradientAlpha _alpha2 = default;
 
     // Start is called before the first frame update
     private void Start()

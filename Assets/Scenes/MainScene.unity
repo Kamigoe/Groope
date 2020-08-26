@@ -1418,7 +1418,7 @@ GameObject:
   - component: {fileID: 719510763}
   - component: {fileID: 719510762}
   m_Layer: 5
-  m_Name: HeaderFrame (1)
+  m_Name: HeaderFrame
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -4496,6 +4496,7 @@ MonoBehaviour:
   _chatButton: {fileID: 1420926904}
   _actionButton: {fileID: 1908492147}
   _groupScroll: {fileID: 1274283219}
+  _chatScroll: {fileID: 550745}
 --- !u!114 &3900982995122576508
 MonoBehaviour:
   m_ObjectHideFlags: 0

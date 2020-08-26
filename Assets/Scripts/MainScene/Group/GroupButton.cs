@@ -40,4 +40,9 @@ public class GroupButton : MonoBehaviour
     {
         _notificationIcon.ClearNotification();
     }
+
+    public void SetTalking(bool isTalking)
+    {
+        _talkingIcon.preferredWidth = isTalking ? 48 : 0;
+    }
 }

@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using DG.Tweening;
 using UnityEngine;
@@ -7,19 +8,19 @@ using UnityEngine.UI;
 
 public class MainManager : MonoBehaviour
 {
-    private float ChangeStateMoveRatioX = 0.05f;
+    private const float ChangeStateMoveRatioX = 0.05f;
     private float ChangeStateMoveRatioY = 0.05f;
-    private float ChangeMenuMoveRatioX = 0.15f;
+    private const float ChangeMenuMoveRatioX = 0.15f;
     private float ChangeMenuMoveRatioY = 0.15f;
-    private float scrollSencivility = 35;
-    private float ModalAlpha = 0.5f;
+    private const float ScrollSencivility = 35;
+    private const float ModalAlpha = 0.5f;
 
-    private float GroupMinX = -375f;
-    private float GroupMaxX = -10f;
-    private float ChatMinX = 10f;
-    private float ChatMaxX = 375f;
+    private const float GroupMinX = -375f;
+    private const float GroupMaxX = -10f;
+    private const float ChatMinX = 10f;
+    private const float ChatMaxX = 375f;
     private float ActionMinY = 0;
-    private float ActionMaxY = 545f;
+    private const float ActionMaxY = 545f;
     
     [SerializeField] private SafeAreaPadding _padding = default;
     [SerializeField] private RectTransform _groupMenu = default;
@@ -33,6 +34,7 @@ public class MainManager : MonoBehaviour
     [SerializeField] private Button _actionButton = default;
 
     [SerializeField] private ScrollRect _groupScroll = default;
+    [SerializeField] private ScrollRect _chatScroll = default;
 
     private RaycastDetector _modalAction_Graph = default;
     private RaycastDetector _modal_Graph = default;
@@ -52,12 +54,13 @@ public class MainManager : MonoBehaviour
     private Vector2 _maxPos = default;
 
     private Vector2 _groupScrollRatio = default;
+    private Vector2 _chatScrollRatio = default;
 
     private float _bottomPaddingSize = default;
     private bool _onTouch = default;
     private bool _isShowingAction = default;
     
-    void Start()
+    private void Start()
     {
         ChangeMenuMoveRatioY = ChangeMenuMoveRatioX * _padding.width / _padding.height;
         ChangeStateMoveRatioY = ChangeStateMoveRatioX * _padding.width / _padding.height;
@@ -85,80 +88,73 @@ public class MainManager : MonoBehaviour
 
         _modal.SetEventTrigger(EventTriggerType.PointerClick, (data) =>
         {
-            if (_state == MainSceneState.ShowGroup)
+            switch (_state)
             {
-                DOVirtual.Float(GroupMinX, GroupMaxX, 0.2f, (posX) =>
-                {
-                    _groupMenu.anchoredPosition = new Vector2(posX, _groupMenu.anchoredPosition.y);
-                });
-                _modal_Graph.DOFade(0, 0.2f);
-                _state = _isShowingAction ? MainSceneState.ShowAction : MainSceneState.ShowMain;
-            }
-            else if (_state == MainSceneState.ShowChat)
-            {
-                DOVirtual.Float(ChatMaxX, ChatMinX, 0.2f, (posX) =>
-                {
-                    _chatMenu.anchoredPosition = new Vector2(posX, _chatMenu.anchoredPosition.y);
-                });
-                _modal_Graph.DOFade(0, 0.2f);
-                _state = _isShowingAction ? MainSceneState.ShowAction : MainSceneState.ShowMain;
+                case MainSceneState.ShowGroup:
+                    DOVirtual.Float(GroupMinX, GroupMaxX, 0.2f, (posX) =>
+                    {
+                        _groupMenu.anchoredPosition = new Vector2(posX, _groupMenu.anchoredPosition.y);
+                    });
+                    _modal_Graph.DOFade(0, 0.2f);
+                    _state = _isShowingAction ? MainSceneState.ShowAction : MainSceneState.ShowMain;
+                    break;
+                case MainSceneState.ShowChat:
+                    DOVirtual.Float(ChatMaxX, ChatMinX, 0.2f, (posX) =>
+                    {
+                        _chatMenu.anchoredPosition = new Vector2(posX, _chatMenu.anchoredPosition.y);
+                    });
+                    _modal_Graph.DOFade(0, 0.2f);
+                    _state = _isShowingAction ? MainSceneState.ShowAction : MainSceneState.ShowMain;
+                    break;
             }
         });
         _modalAction.SetEventTrigger(EventTriggerType.PointerClick, (data) =>
         {
-            if (_state == MainSceneState.ShowAction)
+            if (_state != MainSceneState.ShowAction) return;
+            DOVirtual.Float(ActionMaxY, ActionMinY, 0.2f, (posY) =>
             {
-                DOVirtual.Float(ActionMaxY, ActionMinY, 0.2f, (posY) =>
-                {
-                    _actionMenu.anchoredPosition = new Vector2(_actionMenu.anchoredPosition.x, posY);
-                });
-                _modalAction_Graph.DOFade(0, 0.2f);
-                _action_Graph.DOFade(1, 0.2f);
-                _isShowingAction = false;
-                _state = MainSceneState.ShowMain;
-            }
+                _actionMenu.anchoredPosition = new Vector2(_actionMenu.anchoredPosition.x, posY);
+            });
+            _modalAction_Graph.DOFade(0, 0.2f);
+            _action_Graph.DOFade(1, 0.2f);
+            _isShowingAction = false;
+            _state = MainSceneState.ShowMain;
         });
 
-        _groupButton.onClick.AddListener(() => 
+        _groupButton.onClick.AddListener(() =>
         {
-            if (_state == MainSceneState.ShowMain)
+            if (_state != MainSceneState.ShowMain) return;
+            DOVirtual.Float(GroupMaxX, GroupMinX, 0.2f, (posX) =>
             {
-                DOVirtual.Float(GroupMaxX, GroupMinX, 0.2f, (posX) =>
-                {
-                    _groupMenu.anchoredPosition = new Vector2(posX, _groupMenu.anchoredPosition.y);
-                });
-                _modal_Graph.DOFade(ModalAlpha, 0.2f);
-                _state = MainSceneState.ShowGroup;
-            }
+                _groupMenu.anchoredPosition = new Vector2(posX, _groupMenu.anchoredPosition.y);
+            });
+            _modal_Graph.DOFade(ModalAlpha, 0.2f);
+            _state = MainSceneState.ShowGroup;
         });
         
-        _chatButton.onClick.AddListener(() => 
+        _chatButton.onClick.AddListener(() =>
         {
-            if (_state == MainSceneState.ShowMain)
+            if (_state != MainSceneState.ShowMain) return;
+            DOVirtual.Float(ChatMinX, ChatMaxX, 0.2f, (posX) =>
             {
-                DOVirtual.Float(ChatMinX, ChatMaxX, 0.2f, (posX) =>
-                {
-                    _chatMenu.anchoredPosition = new Vector2(posX, _chatMenu.anchoredPosition.y);
-                });
-                _modal_Graph.DOFade(ModalAlpha, 0.2f);
-                _state = MainSceneState.ShowChat;
-            }
+                _chatMenu.anchoredPosition = new Vector2(posX, _chatMenu.anchoredPosition.y);
+            });
+            _modal_Graph.DOFade(ModalAlpha, 0.2f);
+            _state = MainSceneState.ShowChat;
         });
 
         _actionButton.onClick.AddListener(() =>
         {
-            if (_state == MainSceneState.ShowMain)
+            if (_state != MainSceneState.ShowMain) return;
+            DOVirtual.Float(ActionMinY, ActionMaxY, 0.2f, (posY) =>
             {
-                DOVirtual.Float(ActionMinY, ActionMaxY, 0.2f, (posY) =>
-                {
-                    _actionMenu.anchoredPosition = new Vector2(_actionMenu.anchoredPosition.x, posY);
-                });
-                _modalAction_Graph.DOFade(ModalAlpha, 0.2f);
-                _action_Graph.DOFade(0, 0.2f);
-                _state = MainSceneState.ShowAction;
+                _actionMenu.anchoredPosition = new Vector2(_actionMenu.anchoredPosition.x, posY);
+            });
+            _modalAction_Graph.DOFade(ModalAlpha, 0.2f);
+            _action_Graph.DOFade(0, 0.2f);
+            _state = MainSceneState.ShowAction;
 
-                _isShowingAction = true;
-            }
+            _isShowingAction = true;
         });
         
         _groupScroll.onValueChanged.AddListener((value) =>
@@ -167,7 +163,17 @@ public class MainManager : MonoBehaviour
             value *= rect.sizeDelta;
             var scroll = Mathf.Abs(value.y - _groupScrollRatio.y);
 
-            if (scroll >= scrollSencivility)
+            if (scroll >= ScrollSencivility)
+                _onTouch = false;
+        });
+        
+        _chatScroll.onValueChanged.AddListener((value) =>
+        {
+            var rect = _chatScroll.GetComponent<RectTransform>();
+            value *= rect.sizeDelta;
+            var scroll = Mathf.Abs(value.y - _chatScrollRatio.y);
+
+            if (scroll >= ScrollSencivility)
                 _onTouch = false;
         });
     }
@@ -176,66 +182,79 @@ public class MainManager : MonoBehaviour
     {
         var touchInfo = TouchInput.GetTouch();
 
-        if (touchInfo == TouchInfo.Began)
+        switch (touchInfo)
         {
-            _onTouch = true;
-            _touchPosition = TouchInput.GetTouchPosition();
-
-            var groupScrollRect = _groupScroll.GetComponent<RectTransform>();
-            _groupScrollRatio = _groupScroll.normalizedPosition * groupScrollRect.sizeDelta;
-        }
-        else if (touchInfo == TouchInfo.Ended)
-        {
-            _onTouch = false;
-            _raycaster.ignoreReversedGraphics = true;
-            _groupScroll.vertical = true;
-
-            if (_menuRect != null)
+            case TouchInfo.Began:
             {
-                var menuRect = _menuRect;
-                if (Mathf.Abs(_touchPosRatio.x) >= ChangeMenuMoveRatioX && _state != MainSceneState.MoveAction)
-                {
-                    DOVirtual.Float(menuRect.anchoredPosition.x, _touchPosRatio.x > 0 ? _maxPos.x : _minPos.x, (1f - Mathf.Abs(_touchPosRatio.x)) * 0.2f, (posX) =>
-                    {
-                        menuRect.anchoredPosition = new Vector2(posX, menuRect.anchoredPosition.y);
-                    });
+                _onTouch = true;
+                _touchPosition = TouchInput.GetTouchPosition();
 
-                    if (_state == MainSceneState.MoveGroup)
-                        _modal_Graph.DOFade(_touchPosRatio.x > 0 ? 0 : ModalAlpha, (1f - Mathf.Abs(_touchPosRatio.x)) * 0.2f);
-                    else if (_state == MainSceneState.MoveChat)
-                        _modal_Graph.DOFade(_touchPosRatio.x > 0 ? ModalAlpha : 0, (1f - Mathf.Abs(_touchPosRatio.x)) * 0.2f);
-                }
-                else if (Mathf.Abs(_touchPosRatio.y) >= ChangeMenuMoveRatioY && _state == MainSceneState.MoveAction)
+                var groupScrollRect = _groupScroll.GetComponent<RectTransform>();
+                var friendScrollRect = _chatScroll.GetComponent<RectTransform>();
+                _groupScrollRatio = _groupScroll.normalizedPosition * groupScrollRect.sizeDelta;
+                _chatScrollRatio = _chatScroll.normalizedPosition * friendScrollRect.sizeDelta;
+                break;
+            }
+            case TouchInfo.Ended:
+            {
+                _onTouch = false;
+                _raycaster.ignoreReversedGraphics = true;
+                _groupScroll.vertical = true;
+
+                if (_menuRect != null)
                 {
-                    DOVirtual.Float(menuRect.anchoredPosition.y, _touchPosRatio.y > 0 ? _maxPos.y : _minPos.y, (1f - Mathf.Abs(_touchPosRatio.y)) * 0.2f, (posY) =>
+                    var menuRect = _menuRect;
+                    if (Mathf.Abs(_touchPosRatio.x) >= ChangeMenuMoveRatioX && _state != MainSceneState.MoveAction)
                     {
-                        menuRect.anchoredPosition = new Vector2(menuRect.anchoredPosition.x, posY);
-                    });
+                        DOVirtual.Float(menuRect.anchoredPosition.x, _touchPosRatio.x > 0 ? _maxPos.x : _minPos.x, (1f - Mathf.Abs(_touchPosRatio.x)) * 0.2f, (posX) =>
+                        {
+                            menuRect.anchoredPosition = new Vector2(posX, menuRect.anchoredPosition.y);
+                        });
+
+                        switch (_state)
+                        {
+                            case MainSceneState.MoveGroup:
+                                _modal_Graph.DOFade(_touchPosRatio.x > 0 ? 0 : ModalAlpha, (1f - Mathf.Abs(_touchPosRatio.x)) * 0.2f);
+                                break;
+                            case MainSceneState.MoveChat:
+                                _modal_Graph.DOFade(_touchPosRatio.x > 0 ? ModalAlpha : 0, (1f - Mathf.Abs(_touchPosRatio.x)) * 0.2f);
+                                break;
+                        }
+                    }
+                    else if (Mathf.Abs(_touchPosRatio.y) >= ChangeMenuMoveRatioY && _state == MainSceneState.MoveAction)
+                    {
+                        DOVirtual.Float(menuRect.anchoredPosition.y, _touchPosRatio.y > 0 ? _maxPos.y : _minPos.y, (1f - Mathf.Abs(_touchPosRatio.y)) * 0.2f, (posY) =>
+                        {
+                            menuRect.anchoredPosition = new Vector2(menuRect.anchoredPosition.x, posY);
+                        });
                     
-                    _modalAction_Graph.DOFade(_touchPosRatio.y > 0 ? ModalAlpha : 0, (1f - Mathf.Abs(_touchPosRatio.y)) * 0.2f);
-                    _action_Graph.DOFade(_touchPosRatio.y > 0 ? 0 : 1, (1f - Mathf.Abs(_touchPosRatio.y)) * 0.2f);
-                    _isShowingAction = _touchPosRatio.y > 0 ? true : false;
-                }
-                else
-                {
-                    DOVirtual.Float(menuRect.anchoredPosition.x, _menuPos.x, (1f - Mathf.Abs(_touchPosRatio.x)) * 0.2f, (posX) =>
-                    {
-                        menuRect.anchoredPosition = new Vector2(posX, menuRect.anchoredPosition.y);
-                    });
-                    DOVirtual.Float(menuRect.anchoredPosition.y, _menuPos.y, (1f - Mathf.Abs(_touchPosRatio.y)) * 0.2f, (posY) =>
-                    {
-                        menuRect.anchoredPosition = new Vector2(menuRect.anchoredPosition.x, posY);
-                    });
-                    if (_state == MainSceneState.MoveAction)
-                        _modalAction_Graph.DOFade(_modalAction_Graph.color.a > ModalAlpha / 2f ? ModalAlpha : 0, (1f - Mathf.Abs(_touchPosRatio.y)) * 0.2f);
+                        _modalAction_Graph.DOFade(_touchPosRatio.y > 0 ? ModalAlpha : 0, (1f - Mathf.Abs(_touchPosRatio.y)) * 0.2f);
+                        _action_Graph.DOFade(_touchPosRatio.y > 0 ? 0 : 1, (1f - Mathf.Abs(_touchPosRatio.y)) * 0.2f);
+                        _isShowingAction = _touchPosRatio.y > 0 ? true : false;
+                    }
                     else
-                        _modal_Graph.DOFade(_modal_Graph.color.a > ModalAlpha / 2f ? ModalAlpha : 0, (1f - Mathf.Abs(_touchPosRatio.x)) * 0.2f);
+                    {
+                        DOVirtual.Float(menuRect.anchoredPosition.x, _menuPos.x, (1f - Mathf.Abs(_touchPosRatio.x)) * 0.2f, (posX) =>
+                        {
+                            menuRect.anchoredPosition = new Vector2(posX, menuRect.anchoredPosition.y);
+                        });
+                        DOVirtual.Float(menuRect.anchoredPosition.y, _menuPos.y, (1f - Mathf.Abs(_touchPosRatio.y)) * 0.2f, (posY) =>
+                        {
+                            menuRect.anchoredPosition = new Vector2(menuRect.anchoredPosition.x, posY);
+                        });
+                        if (_state == MainSceneState.MoveAction)
+                            _modalAction_Graph.DOFade(_modalAction_Graph.color.a > ModalAlpha / 2f ? ModalAlpha : 0, (1f - Mathf.Abs(_touchPosRatio.y)) * 0.2f);
+                        else
+                            _modal_Graph.DOFade(_modal_Graph.color.a > ModalAlpha / 2f ? ModalAlpha : 0, (1f - Mathf.Abs(_touchPosRatio.x)) * 0.2f);
+                    }
+
+                    _menuRect = null;
+                    var nextState = GetNextState();
+                    _beforeState = _state;
+                    _state = nextState;
                 }
 
-                _menuRect = null;
-                var nextState = GetNextState();
-                _beforeState = _state;
-                _state = nextState;
+                break;
             }
         }
         
@@ -257,26 +276,26 @@ public class MainManager : MonoBehaviour
                     _raycaster.ignoreReversedGraphics = false;
                     _beforeState = _state;
                     _state = nextState;
-                    if (_state == MainSceneState.MoveGroup)
+                    switch (_state)
                     {
-                        _menuPos = _groupMenu.anchoredPosition;
-                        _menuRect = _groupMenu;
-                        _minPos = new Vector2(GroupMinX, _menuPos.y);
-                        _maxPos = new Vector2(GroupMaxX, _menuPos.y);
-                    }
-                    else if (_state == MainSceneState.MoveChat)
-                    {
-                        _menuPos = _chatMenu.anchoredPosition;
-                        _menuRect = _chatMenu;
-                        _minPos = new Vector2(ChatMinX, _menuPos.y);
-                        _maxPos = new Vector2(ChatMaxX, _menuPos.y);
-                    }
-                    else if (_state == MainSceneState.MoveAction)
-                    {
-                        _menuPos = _actionMenu.anchoredPosition;
-                        _menuRect = _actionMenu;
-                        _minPos = new Vector2(_menuPos.x, ActionMinY);
-                        _maxPos = new Vector2(_menuPos.x, ActionMaxY);
+                        case MainSceneState.MoveGroup:
+                            _menuPos = _groupMenu.anchoredPosition;
+                            _menuRect = _groupMenu;
+                            _minPos = new Vector2(GroupMinX, _menuPos.y);
+                            _maxPos = new Vector2(GroupMaxX, _menuPos.y);
+                            break;
+                        case MainSceneState.MoveChat:
+                            _menuPos = _chatMenu.anchoredPosition;
+                            _menuRect = _chatMenu;
+                            _minPos = new Vector2(ChatMinX, _menuPos.y);
+                            _maxPos = new Vector2(ChatMaxX, _menuPos.y);
+                            break;
+                        case MainSceneState.MoveAction:
+                            _menuPos = _actionMenu.anchoredPosition;
+                            _menuRect = _actionMenu;
+                            _minPos = new Vector2(_menuPos.x, ActionMinY);
+                            _maxPos = new Vector2(_menuPos.x, ActionMaxY);
+                            break;
                     }
                 }
             }
@@ -320,66 +339,73 @@ public class MainManager : MonoBehaviour
 
     private MainSceneState GetNextState ()
     {
-        if (_state == MainSceneState.MoveGroup)
+        switch (_state)
         {
-            if (_touchPosRatio.x >= ChangeMenuMoveRatioX)
+            case MainSceneState.MoveGroup when _touchPosRatio.x >= ChangeMenuMoveRatioX:
                 return _isShowingAction ? MainSceneState.ShowAction : MainSceneState.ShowMain;
-            if (_touchPosRatio.x <= -ChangeMenuMoveRatioX)
+            case MainSceneState.MoveGroup when _touchPosRatio.x <= -ChangeMenuMoveRatioX:
                 return MainSceneState.ShowGroup;
-            return _beforeState;
-        }
-        else if (_state == MainSceneState.MoveChat)
-        {
-            if (_touchPosRatio.x <= -ChangeMenuMoveRatioX)
+            case MainSceneState.MoveGroup:
+                return _beforeState;
+            case MainSceneState.MoveChat when _touchPosRatio.x <= -ChangeMenuMoveRatioX:
                 return _isShowingAction ? MainSceneState.ShowAction : MainSceneState.ShowMain;
-            if (_touchPosRatio.x >= ChangeMenuMoveRatioX)
+            case MainSceneState.MoveChat when _touchPosRatio.x >= ChangeMenuMoveRatioX:
                 return MainSceneState.ShowChat;
-            return _beforeState;
-        }
-        else if (_state == MainSceneState.MoveAction)
-        {
-            if (_touchPosRatio.y <= -ChangeMenuMoveRatioY)
+            case MainSceneState.MoveChat:
+                return _beforeState;
+            case MainSceneState.MoveAction when _touchPosRatio.y <= -ChangeMenuMoveRatioY:
                 return MainSceneState.ShowMain;
-            if (_touchPosRatio.y >= ChangeMenuMoveRatioY)
+            case MainSceneState.MoveAction when _touchPosRatio.y >= ChangeMenuMoveRatioY:
                 return MainSceneState.ShowAction;
-            return _beforeState;
-        }
-        else
-        {
-            var touchPos = TouchInput.GetTouchPosition();
+            case MainSceneState.MoveAction:
+                return _beforeState;
+            default:
+                var touchPos = TouchInput.GetTouchPosition();
 
-            if (_touchPosRatio.x >= ChangeStateMoveRatioX)
-            {
-                if (_state == MainSceneState.ShowMain || _state == MainSceneState.ShowAction)
-                    return MainSceneState.MoveChat;
-                else if (_state == MainSceneState.ShowGroup)
-                    return MainSceneState.MoveGroup;
-                else
-                    _touchPosition.x = touchPos.x;
-            }
-            else if (_touchPosRatio.x <= -ChangeStateMoveRatioX)
-            {
-                if (_state == MainSceneState.ShowMain || _state == MainSceneState.ShowAction)
-                    return MainSceneState.MoveGroup;
-                else if (_state == MainSceneState.ShowChat)
-                    return MainSceneState.MoveChat;
-                else
-                    _touchPosition.x = touchPos.x;
-            }
-            else if (_touchPosRatio.y >= ChangeStateMoveRatioY)
-            {
-                if (_state == MainSceneState.ShowMain)
-                    return MainSceneState.MoveAction;
-                else
-                    _touchPosition.y = touchPos.y;
-            }
-            else if (_touchPosRatio.y <= -ChangeStateMoveRatioY)
-            {
-                if (_state == MainSceneState.ShowAction)
-                    return MainSceneState.MoveAction;
-                else
-                    _touchPosition.y = touchPos.y;
-            }
+                if (_touchPosRatio.x >= ChangeStateMoveRatioX)
+                {
+                    switch (_state)
+                    {
+                        case MainSceneState.ShowMain:
+                        case MainSceneState.ShowAction:
+                            return MainSceneState.MoveChat;
+                        case MainSceneState.ShowGroup:
+                            return MainSceneState.MoveGroup;
+                        default:
+                            _touchPosition.x = touchPos.x;
+                            break;
+                    }
+                }
+                else if (_touchPosRatio.x <= -ChangeStateMoveRatioX)
+                {
+                    switch (_state)
+                    {
+                        case MainSceneState.ShowMain:
+                        case MainSceneState.ShowAction:
+                            return MainSceneState.MoveGroup;
+                        case MainSceneState.ShowChat:
+                            return MainSceneState.MoveChat;
+                        default:
+                            _touchPosition.x = touchPos.x;
+                            break;
+                    }
+                }
+                else if (_touchPosRatio.y >= ChangeStateMoveRatioY)
+                {
+                    if (_state == MainSceneState.ShowMain)
+                        return MainSceneState.MoveAction;
+                    else
+                        _touchPosition.y = touchPos.y;
+                }
+                else if (_touchPosRatio.y <= -ChangeStateMoveRatioY)
+                {
+                    if (_state == MainSceneState.ShowAction)
+                        return MainSceneState.MoveAction;
+                    else
+                        _touchPosition.y = touchPos.y;
+                }
+
+                break;
         }
 
         return _state;

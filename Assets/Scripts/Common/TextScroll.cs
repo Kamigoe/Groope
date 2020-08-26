@@ -6,9 +6,9 @@ using UnityEngine.UI;
 public class TextScroll : BaseMeshEffect
 {
     [SerializeField]
-    private float _space;
+    private float _space = default;
     [SerializeField]
-    private float _speed;
+    private float _speed = default;
     
     private Graphic _cacheGraphic;
     private List<UIVertex> _uiVertexes = new List<UIVertex>();
