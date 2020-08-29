@@ -60,6 +60,11 @@ public class MainManager : MonoBehaviour
     private bool _onTouch = default;
     private bool _isShowingAction = default;
     
+    private void Awake()
+    {
+        AppData.Initialize();
+    }
+
     private void Start()
     {
         ChangeMenuMoveRatioY = ChangeMenuMoveRatioX * _padding.width / _padding.height;
