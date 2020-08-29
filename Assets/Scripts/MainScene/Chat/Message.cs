@@ -21,15 +21,18 @@ public class Message : MonoBehaviour
         _timeText.text = time;
         _text.text = message;
         Destroy(_image.transform.parent.gameObject);
+        _image = null;
         Redraw();
     }
 
     public void Initialize(Sprite iconImage, string time, Sprite receiveImage)
     {
+        _myRectTransform = GetComponent<RectTransform>();
         _userIcon.sprite = iconImage ? iconImage : _userIcon.sprite;
         _timeText.text = time;
         _image.sprite = receiveImage;
         Destroy(_text.gameObject);
+        _text = null;
         Redraw();
     }
 
@@ -43,14 +46,16 @@ public class Message : MonoBehaviour
             _myRectTransform.sizeDelta = new Vector2(_myRectTransform.sizeDelta.x,
                 textHeight > BaseSizeHeight ? textHeight : BaseSizeHeight);
         }
-        else if (_image != null)
-        {
-            _image.SetNativeSize();
-            var imageRect = _image.GetComponent<RectTransform>();
-            var size = imageRect.sizeDelta;
-            var ratio = 240f / size.x;
 
-            imageRect.sizeDelta = size * ratio;
-        }
+        if (_image == null) return;
+        _image.SetNativeSize();
+        var imageRect = _image.GetComponent<RectTransform>();
+        var size = imageRect.sizeDelta;
+        var ratioX = 240f / size.x;
+        var ratioY = 135f / size.y;
+        if (ratioX < ratioY)
+            imageRect.sizeDelta = size * ratioX;
+        else
+            imageRect.sizeDelta = size * ratioY;
     }
 }

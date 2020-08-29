@@ -1,19 +1,42 @@
-﻿using System.Security.Cryptography;
+﻿using System.Collections;
+using System.Linq;
+using System.Security.Cryptography;
+using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.Networking;
 
 public static class CommonUtils
 {
     public static string SHA256(string key, string data)
     {
-        System.Text.UTF8Encoding ue = new System.Text.UTF8Encoding();
-        byte[] planeBytes = ue.GetBytes(data);
-        byte[] keyBytes = ue.GetBytes(key);
+        var ue = new System.Text.UTF8Encoding();
+        var planeBytes = ue.GetBytes(data);
+        var keyBytes = ue.GetBytes(key);
 	 
-        HMACSHA256 sha256 = new HMACSHA256(keyBytes);
-        byte[] hashBytes = sha256.ComputeHash(planeBytes);
-        string hashStr = "";
-        foreach(byte b in hashBytes) {
-            hashStr += string.Format("{0,0:x2}", b);
+        var sha256 = new HMACSHA256(keyBytes);
+        var hashBytes = sha256.ComputeHash(planeBytes);
+        return hashBytes.Aggregate("", (current, b) => current + $"{b,0:x2}");
+    }
+
+    public static void LoadImage(string path, UnityAction<Sprite> onComplete)
+    {
+        var enumerator = LoadImageASync(path, onComplete);
+        CoroutineManager.instance.StartCoroutine(enumerator);
+    }
+
+    private static IEnumerator LoadImageASync(string path, UnityAction<Sprite> onComplete)
+    {
+        var url = "file://" + path;
+        var www = UnityWebRequestTexture.GetTexture(url);
+        yield return www.SendWebRequest();
+
+        if (www.isNetworkError || www.isHttpError)
+            Debug.Log(www.error);
+        else
+        {
+            var texture = DownloadHandlerTexture.GetContent(www);
+            var sprite = Sprite.Create(texture, new Rect(0, 0, texture.width, texture.height), new Vector2(0.5f,0.5f));
+            onComplete(sprite);
         }
-        return hashStr;
     }
 }
