@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.IO;
+using MessagePack;
 
 public static class TestUtils
 {
@@ -19,5 +20,15 @@ public static class TestUtils
         bin.Close();
 
         return values;
+    }
+
+    public static byte[] SerializeMessage<T>(T data)
+    {
+        return MessagePackSerializer.Serialize(data);
+    }
+
+    public static T DeserializeMessage<T>(byte[] data)
+    {
+        return MessagePackSerializer.Deserialize<T>(data);
     }
 }

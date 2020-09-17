@@ -1,10 +1,13 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.UI;
 using Mirror;
 using Kakera;
 
 public class TestChat : MonoBehaviour
 {
+    private const int MSG_MAX_LENGTH = 10000;
+
     [SerializeField] private NetworkManager manager = default;
 
     [SerializeField] private InputField _inputIP = default;
@@ -29,6 +32,7 @@ public class TestChat : MonoBehaviour
 
     private bool _isConnect = false;
     private bool _isServer = false;
+    private List<TestReceiveData> receiveDataList;
 
     void Start()
     {
@@ -75,14 +79,7 @@ public class TestChat : MonoBehaviour
             string message = _messageInputFIeld.text;
             byte[] data = System.Text.Encoding.UTF8.GetBytes(message);
 
-            TestSendData sendData = new TestSendData();
-            sendData.type = MessageSendType.Text;
-            sendData.value = data;
-
-            if (_isServer)
-                NetworkServer.SendToAll(sendData);
-            else
-                NetworkClient.Send(sendData);
+            SendData(MessageSendType.Text, data);
         });
 
         _sendImageButton.onClick.AddListener(() =>
@@ -91,8 +88,12 @@ public class TestChat : MonoBehaviour
         });
         _unImgPicker.Completed += (path) =>
         {
-            SendImage(path);
+            TexturePack pack = new TexturePack();
+            pack.data = TestUtils.LoadFile(path);
+            SendData(MessageSendType.Image, TestUtils.SerializeMessage(pack));
         };
+
+        receiveDataList = new List<TestReceiveData>();
 
         _start.SetActive(true);
         _stay.SetActive(false);
@@ -118,13 +119,71 @@ public class TestChat : MonoBehaviour
             DisConnect();
         }
     }
-    
+
+    void SendData(MessageSendType type, byte[] data)
+    {
+        string msgID = "hiodajhoiap641hui1";
+        List<List<byte>> msgDataList = new List<List<byte>>();
+        List<byte> msgData = new List<byte>();
+
+        int length = 0;
+        foreach (byte bytedata in data)
+        {
+            length++;
+
+            msgData.Add(bytedata);
+
+            if (length >= MSG_MAX_LENGTH)
+            {
+                msgDataList.Add(msgData);
+                msgData = new List<byte>();
+                length = 0;
+            }
+        }
+
+        if (length != 0)
+            msgDataList.Add(msgData);
+        
+        Debug.Log("SendCount :" + msgDataList.Count);
+        for (int i = 0; i < msgDataList.Count; i++)
+        {
+            TestSendData sendData = new TestSendData();
+            sendData.msgID = msgID;
+            sendData.type = type;
+            sendData.msgCnt = msgDataList.Count;
+            sendData.msgNo = i + 1;
+            sendData.value = msgDataList[i].ToArray();
+            if (_isServer)
+                NetworkServer.SendToAll(sendData);
+            else
+                NetworkClient.Send(sendData);
+        }
+    }
+
     private void ReceiveInfo (NetworkConnection connection, TestSendData data)
     {
-        if (data.type == MessageSendType.Text)
-            _giveMessage.text = System.Text.Encoding.UTF8.GetString(data.value);
-        else if (data.type == MessageSendType.Image)
-            ShowImage(data.value, 500);
+        int index = receiveDataList.FindIndex(x => x.msgID == data.msgID);
+        if (index == -1)
+        {
+            TestReceiveData receiveData = new TestReceiveData(data.msgID, data.msgCnt);
+            index = receiveDataList.Count;
+            receiveDataList.Add(receiveData);
+        }
+
+        receiveDataList[index].AddBuffer(data.msgNo, data.value);
+
+        if (receiveDataList[index].complete)
+        {
+            if (data.type == MessageSendType.Text)
+                _giveMessage.text = System.Text.Encoding.UTF8.GetString(receiveDataList[index].value);
+            if (data.type == MessageSendType.Image)
+            {
+                byte[] texture = TestUtils.DeserializeMessage<TexturePack>(receiveDataList[index].value).data;
+                ShowImage(texture, 500);
+            }
+
+            receiveDataList.RemoveAt(index);
+        }
     }
 
     protected virtual void OnApplicationQuit()
@@ -144,18 +203,6 @@ public class TestChat : MonoBehaviour
 
         _isConnect = false;
         _isServer = false;
-    }
-
-    void SendImage(string path)
-    {
-        TestSendData sendData = new TestSendData();
-        sendData.type = MessageSendType.Image;
-        sendData.value = TestUtils.LoadFile(path);
-
-        if (_isServer)
-            NetworkServer.SendToAll(sendData);
-        else
-            NetworkClient.Send(sendData);
     }
 
     void ShowImage (Texture2D texture, float showSize)
@@ -188,5 +235,4 @@ public class TestChat : MonoBehaviour
         Texture2D tex = TestUtils.ByteArrayToTexture2D(texture);
         ShowImage(tex, showSize);
     }
-
 }
