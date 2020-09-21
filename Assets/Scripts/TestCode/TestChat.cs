@@ -30,6 +30,9 @@ public class TestChat : MonoBehaviour
     [SerializeField] private Button _sendImageButton = default;
     [SerializeField] private Unimgpicker _unImgPicker = default;
 
+    [SerializeField] private InputField _inputRoomName = default;
+    [SerializeField] private Button _connectRoomButton = default;
+
     private bool _isConnect = false;
     private bool _isServer = false;
     private List<TestReceiveData> receiveDataList;
@@ -92,6 +95,12 @@ public class TestChat : MonoBehaviour
             pack.data = TestUtils.LoadFile(path);
             SendData(MessageSendType.Image, TestUtils.SerializeMessage(pack));
         };
+        
+        _connectRoomButton.onClick.AddListener(() =>
+        {
+            if (!string.IsNullOrEmpty(_inputRoomName.text))
+                VoiceChat.Instance.Connect(_inputRoomName.text);
+        });
 
         receiveDataList = new List<TestReceiveData>();
 

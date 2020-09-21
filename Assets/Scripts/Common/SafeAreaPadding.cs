@@ -8,7 +8,7 @@ public class SafeAreaPadding : MonoBehaviour
 
     void Update()
     {
-#if UNITY_IOS || UNITY_ANDROID
+#if !UNITY_EDITOR && (UNITY_IOS || UNITY_ANDROID)
         if (Input.deviceOrientation != DeviceOrientation.Unknown && postOrientation == Input.deviceOrientation)
             return;
 
