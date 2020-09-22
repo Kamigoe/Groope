@@ -3,6 +3,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using Mirror;
 using Kakera;
+using MessagePack;
+using MessagePack.Resolvers;
 
 public class TestChat : MonoBehaviour
 {
@@ -36,6 +38,28 @@ public class TestChat : MonoBehaviour
     private bool _isConnect = false;
     private bool _isServer = false;
     private List<TestReceiveData> receiveDataList;
+    
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    static void InitMessagePack()
+    {
+        StaticCompositeResolver.Instance.Register( new IFormatterResolver[]
+        {
+            GeneratedResolver.Instance, 
+            StandardResolver.Instance
+        });
+
+        var option = MessagePackSerializerOptions.Standard.WithResolver(StaticCompositeResolver.Instance);
+
+        MessagePackSerializer.DefaultOptions = option;
+    }
+
+#if UNITY_EDITOR
+    [UnityEditor.InitializeOnLoadMethod]
+    static void EditorInitMessagePack()
+    {
+        InitMessagePack();
+    }
+#endif
 
     void Start()
     {
